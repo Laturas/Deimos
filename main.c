@@ -1,5 +1,6 @@
 #include <windows.h>
 #include "guifuncs.c"
+#include "resources.c"
 
 const char g_szClassName[] = "myWindowClass";
 
@@ -23,14 +24,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             static HDC device_context;
             device_context = BeginPaint(hwnd, &paint);
             BitBlt(device_context,
-                   paint.rcPaint.left, paint.rcPaint.top,
+                   0, 0,
                    paint.rcPaint.right - paint.rcPaint.left, paint.rcPaint.bottom - paint.rcPaint.top,
                    frame_device_context,
                    paint.rcPaint.left, paint.rcPaint.top,
                    SRCCOPY);
             EndPaint(hwnd, &paint);
         } break;
-
         case WM_SIZE: {
             frame_bitmap_info.bmiHeader.biWidth  = LOWORD(lParam);
             frame_bitmap_info.bmiHeader.biHeight = HIWORD(lParam);
@@ -58,6 +58,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     HWND hWnd = GetConsoleWindow();
     ShowWindow( hWnd, SW_HIDE );
 
+    //HICON ic = CreateIconFromResource(icon_array,4551,1,0x00030000);
     //Step 1: Registering the Window Class
     wc.cbSize        = sizeof(WNDCLASSEX);
     wc.style         = 0;
@@ -110,12 +111,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     while(GetMessage(&Msg, NULL, 0, 0) > 0)
     {
         static unsigned int p = 0;
-        REDRAW_ALL(0x22222222, 0xCCCCCCCC);
+        
         //frame.pixels[(p++)%(frame.width*frame.height)] = 0x88888888;
         //frame.pixels[18%(frame.width*frame.height)] = 0x88888888;
 
-        InvalidateRect(hwnd, NULL, FALSE);
-        UpdateWindow(hwnd);
+        REDRAW_ALL(0x22222222, 0xCCCCCCCC);
+        RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
 
         TranslateMessage(&Msg);
         DispatchMessage(&Msg);
