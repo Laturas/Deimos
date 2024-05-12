@@ -31,6 +31,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                    SRCCOPY);
             EndPaint(hwnd, &paint);
         } break;
+        case WM_SIZING: {
+            frame_bitmap_info.bmiHeader.biWidth  = LOWORD(lParam);
+            frame_bitmap_info.bmiHeader.biHeight = HIWORD(lParam);
+
+            if(frame_bitmap) DeleteObject(frame_bitmap);
+            frame_bitmap = CreateDIBSection(NULL, &frame_bitmap_info, DIB_RGB_COLORS, (void**)&frame.pixels, 0, 0);
+            SelectObject(frame_device_context, frame_bitmap);
+
+            frame.width =  LOWORD(lParam);
+            frame.height = HIWORD(lParam);
+        } break;
         case WM_SIZE: {
             frame_bitmap_info.bmiHeader.biWidth  = LOWORD(lParam);
             frame_bitmap_info.bmiHeader.biHeight = HIWORD(lParam);
@@ -57,6 +68,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     HWND hWnd = GetConsoleWindow();
     ShowWindow( hWnd, SW_HIDE );
+    int offset = LookupIconIdFromDirectory(icon_buffer, TRUE);
+    HICON ic = CreateIconFromResource(icon_buffer + offset, 4286 - offset, TRUE, 0x00030000);
 
     //HICON ic = CreateIconFromResource(icon_array,4551,1,0x00030000);
     //Step 1: Registering the Window Class
@@ -66,14 +79,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     wc.cbClsExtra    = 0;
     wc.cbWndExtra    = 0;
     wc.hInstance     = hInstance;
-    wc.hIcon         = LoadImage(NULL, "icon.ico", IMAGE_ICON, 
-                        0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+    wc.hIcon         = ic;
     wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
     wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
     wc.lpszMenuName  = NULL;
     wc.lpszClassName = g_szClassName;
-    wc.hIconSm       = LoadImage(NULL, "icon.ico", IMAGE_ICON, 
-                        0, 0, LR_DEFAULTSIZE | LR_LOADFROMFILE);
+    wc.hIconSm       = ic;
 
     if(!RegisterClassEx(&wc))
     {
@@ -116,7 +127,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         //frame.pixels[18%(frame.width*frame.height)] = 0x88888888;
 
         REDRAW_ALL(0x22222222, 0xCCCCCCCC);
-        RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW);
+        RedrawWindow(hwnd, NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_INTERNALPAINT);
 
         TranslateMessage(&Msg);
         DispatchMessage(&Msg);

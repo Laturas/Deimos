@@ -85,12 +85,35 @@ int color_id(int ID) {
     return GREY(0x7);
 }
 
+#define GUARDED_DRAW(pixel, color) if ((pixel) >= 0 && (pixel) < (WINWIDTH * WINHEIGHT)) {frame.pixels[(pixel)] = color;}
+
+void draw_sqr(const unsigned int pixel, int color) {
+    GUARDED_DRAW(pixel, color)
+    GUARDED_DRAW(pixel-1, color)
+    GUARDED_DRAW(pixel+1, color)
+    GUARDED_DRAW(pixel+ROW(1), color)
+    GUARDED_DRAW(pixel-ROW(1), color)
+    GUARDED_DRAW(pixel+ROW(1)+1, color)
+    GUARDED_DRAW(pixel+ROW(1)-1, color)
+    GUARDED_DRAW(pixel-ROW(1)+1, color)
+    GUARDED_DRAW(pixel-ROW(1)-1, color)
+}
+
 void draw_path() {
     for (int i = (WINWIDTH) / 2; i < WINWIDTH; i++) {
-        int fn = ROW(i);
-        int pix = i + (WINWIDTH * i);
+        int num = i - (WINWIDTH) / 2;
+        int fn = ROW((num)) + ROW(((WINHEIGHT) / 2));
+        int pix = i + fn;
         if (pix > (WINWIDTH * WINHEIGHT)) {continue;}
-        frame.pixels[pix] = 0xFFFF0000;
+        draw_sqr(pix, 0xFFFF0000);
+    }
+    for (int i = 0; i < (WINWIDTH) / 2; i++) {
+        int num = i - (WINWIDTH) / 2;
+        int fn = ROW((num)) + ROW(((WINHEIGHT) / 2));
+        int pix = i + fn;
+        if (pix < 0) {continue;}
+        if (pix > (WINWIDTH * WINHEIGHT)) {continue;}
+        draw_sqr(pix, 0xFFFF0000);
     }
 }
 
@@ -118,6 +141,6 @@ void REDRAW_ALL(int bg_color, int axes_color) {
     draw_all_lines(50, 0x66666666);
     DRAW_AXIS(WINHEIGHT / 2, axes_color, HORIZONTAL);
     DRAW_AXIS(WINWIDTH / 2, axes_color, VERTICAL);
-    draw_panel(input_panel);
     draw_path();
+    draw_panel(input_panel);
 }
