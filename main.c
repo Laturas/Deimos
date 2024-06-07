@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <windowsx.h>
 #include "guifuncs.c"
 
 const char g_szClassName[] = "myWindowClass";
@@ -6,6 +7,7 @@ const char g_szClassName[] = "myWindowClass";
 static BITMAPINFO frame_bitmap_info;
 static HBITMAP frame_bitmap = 0;
 static HDC frame_device_context = 0;
+static bool mouse_is_pressed;
 
 // Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -13,6 +15,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     switch(msg)
     {
         case WM_CLOSE:
+        KILL:
             DestroyWindow(hwnd);
         break;
         case WM_DESTROY:
@@ -42,6 +45,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             frame.width =  LOWORD(lParam);
             frame.height = HIWORD(lParam);
         } break;
+        case WM_LBUTTONDOWN: {
+            
+            mouse_is_pressed = true;
+            int xPos = GET_X_LPARAM(lParam); 
+            int yPos = GET_Y_LPARAM(lParam);
+            //printf("Position: (%d, %d)\n",xPos,yPos); fflush(stdout);
+        } break;
+        case WM_LBUTTONUP: {
+            mouse_is_pressed = false;
+        } break;
+        case WM_MOUSEMOVE: {
+            int xPos = GET_X_LPARAM(lParam); 
+            int yPos = GET_Y_LPARAM(lParam);
+            if (mouse_is_pressed) {
+                cam_x_pos -= prev_mouse_x - xPos;
+                cam_y_pos += prev_mouse_y - yPos;
+            }
+            prev_mouse_x = xPos;
+            prev_mouse_y = yPos;
+        }
+        case WM_KEYDOWN: {
+            //printf("Something pressed!\n"); fflush(stdout);
+            if (wParam == MK_CONTROL)
+            {
+                goto KILL;
+            }
+        }
+        break;
         default:
             return DefWindowProc(hwnd, msg, wParam, lParam);
     }
@@ -91,7 +122,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     hwnd = CreateWindowEx(
         WS_EX_CLIENTEDGE,
         g_szClassName,
-        "Desmos but good",
+        "Wacky Desmos Clone",
         WS_OVERLAPPEDWINDOW,
         CW_USEDEFAULT, CW_USEDEFAULT, 800, 600,
         NULL, NULL, hInstance, NULL);
