@@ -210,7 +210,7 @@ AdvancedNumber advsqrt(float i) {
 }
 
 AdvancedNumber input_function(float i) {
-    return advsqrt(i);
+    return advlog(i);
 }
 
 int m_x_pos;
