@@ -32,13 +32,13 @@ int prev_mouse_y = 0;
 /// @param axes_color The color of the line.
 /// @param orientation 0 for horizontal, 1 for vertical
 void DRAW_GRAPH_LINE(int position, int axes_color, char orientation) {
-    int draw_increment = (orientation) ? WINWIDTH : 1;
-    int start_pos = (orientation) 
+    unsigned int draw_increment = (orientation) ? WINWIDTH : 1;
+    unsigned int start_pos = (orientation) 
         ? (position)      // Vertical
         : ROW((position));    // Horizontal
-    int end_pos = (orientation) ? (position) + (WINWIDTH * WINHEIGHT) : ROW((position)) + WINWIDTH * 2;
+    unsigned int end_pos = (orientation) ? (position) + (WINWIDTH * WINHEIGHT) : ROW((position)) + WINWIDTH * 2;
 
-    int i = start_pos;
+    unsigned int i = start_pos;
     while (i < end_pos) {
         if (WINWIDTH * WINHEIGHT == 0) {return;}
         if (i >= WINWIDTH * WINHEIGHT) {return;}
