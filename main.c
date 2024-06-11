@@ -7,7 +7,7 @@ const char g_szClassName[] = "myWindowClass";
 static BITMAPINFO frame_bitmap_info;
 static HBITMAP frame_bitmap = 0;
 static HDC frame_device_context = 0;
-static bool mouse_is_pressed;
+static bool mouse_is_pressed = false;
 
 // Step 4: the Window Procedure
 LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
@@ -31,6 +31,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                    frame_device_context,
                    paint.rcPaint.left, paint.rcPaint.top,
                    SRCCOPY);
+            //RECT item = {0,500,500,0};
+            //LPCSTR hel = "Hello";
+            //DrawText(frame_device_context,hel,5,&item,DT_BOTTOM);
+
+            //HDC dc = GetDc(hwnd);
+            RECT rc;
+            SetTextColor(device_context,0xFFFFFF);
+            SetBkColor(device_context,(0x222222));
+
+            GetClientRect(hwnd, &rc);
+            DrawText(device_context, "Hello!", -1, &rc, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+            ReleaseDC(hwnd, device_context);
+
             EndPaint(hwnd, &paint);
         } break;
 
@@ -55,7 +68,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         case WM_LBUTTONUP: {
             mouse_is_pressed = false;
         } break;
+        case WM_RBUTTONDOWN: {
+            
+            rclick = true;
+            m_x_pos = GET_X_LPARAM(lParam);
+            m_y_pos = WINHEIGHT - GET_Y_LPARAM(lParam);
+        } break;
+        case WM_RBUTTONUP: {
+            rclick = false;
+        } break;
         case WM_MOUSEMOVE: {
+            m_x_pos = GET_X_LPARAM(lParam);
+            m_y_pos = WINHEIGHT - GET_Y_LPARAM(lParam);
             int xPos = GET_X_LPARAM(lParam); 
             int yPos = GET_Y_LPARAM(lParam);
             if (mouse_is_pressed) {
@@ -64,6 +88,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
             prev_mouse_x = xPos;
             prev_mouse_y = yPos;
+        }
+        case WM_MOUSEWHEEL: {
+            int zDelt = GET_WHEEL_DELTA_WPARAM(wParam);
+
+            if (zDelt > 0) {scale = (scale == 1) ? 5 : scale + 5;}
+            if (zDelt < 0) {scale = (scale <= 5) ? 1 : scale - 5;}
+
+            
         }
         case WM_KEYDOWN: {
             //printf("Something pressed!\n"); fflush(stdout);
